@@ -152,6 +152,7 @@ namespace AssetStudio
                     GameType.HelixWaltz2 => ParseHelixWaltz2(reader),
                     GameType.AnchorPanic => DecryptAnchorPanic(reader),
                     GameType.DreamscapeAlbireo => DecryptDreamscapeAlbireo(reader),
+                    GameType.Persona5X => ParseAlchemyStars(reader),
                     _ => reader
                 };
             }

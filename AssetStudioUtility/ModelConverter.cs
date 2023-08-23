@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FMOD;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -103,6 +104,243 @@ namespace AssetStudio
             ConvertAnimations();
         }
 
+        private void P5X_InitWithGameObject(List<MUActorMeshExportInfo> meshExpInfo, GameObject m_GameObject, bool hasTransformHierarchy = true)
+        {
+            var m_Transform = m_GameObject.m_Transform;
+            if (!hasTransformHierarchy)
+            {
+                ConvertTransforms(m_Transform, null);
+                DeoptimizeTransformHierarchy();
+            }
+            else
+            {
+                var frameList = new List<ImportedFrame>();
+                var tempTransform = m_Transform;
+                while (tempTransform.m_Father.TryGet(out var m_Father))
+                {
+                    frameList.Add(ConvertTransform(m_Father));
+                    tempTransform = m_Father;
+                }
+                if (frameList.Count > 0)
+                {
+                    RootFrame = frameList[frameList.Count - 1];
+                    for (var i = frameList.Count - 2; i >= 0; i--)
+                    {
+                        var frame = frameList[i];
+                        var parent = frameList[i + 1];
+                        parent.AddChild(frame);
+                    }
+                    ConvertTransforms(m_Transform, frameList[0]);
+                }
+                else
+                {
+                    ConvertTransforms(m_Transform, null);
+                }
+
+                CreateBonePathHash(m_Transform);
+            }
+
+            P5X_ConvertMeshRenderer(meshExpInfo, m_Transform);
+        }
+        public ModelConverter(List<MUActorMeshExportInfo> meshExportInfo, GameObject gameObject, ImageFormat imageFormat, Game game, bool collectAnimations, AnimationClip[] animationList = null)
+        {
+            Game = game;
+            this.imageFormat = imageFormat;
+            var transform = gameObject.m_Transform;
+            if (gameObject.m_Animator != null)
+            {
+                // InitWithAnimator
+                Animator animator = gameObject.m_Animator;
+                if (animator.m_Avatar.TryGet(out var m_Avatar))
+                {
+                    avatar = m_Avatar;
+                }
+                animator.m_GameObject.TryGet(out var a_gameObject);
+                P5X_InitWithGameObject(meshExportInfo, a_gameObject);
+                if (animationList == null && collectAnimations)
+                {
+                    CollectAnimationClip(animator);
+                }
+            }
+            else
+            {
+                P5X_InitWithGameObject(meshExportInfo, gameObject);
+
+            }
+
+            if (animationList != null)
+            {
+                foreach (var animClip in animationList)
+                {
+                    animationClipHashSet.Add(animClip);
+                }
+            }
+            ConvertAnimations();
+        }
+        private void P5X_ConvertMeshRenderer(List<MUActorMeshExportInfo> meshExportInfo, Transform transform)
+        {
+            transform.m_GameObject.TryGet(out var gameObj);
+            if (gameObj.m_MeshRenderer != null)
+            {
+                ConvertMeshRenderer(gameObj.m_MeshRenderer);
+            }
+            if (gameObj.m_SkinnedMeshRenderer != null)
+            {
+                ConvertMeshRenderer(gameObj.m_SkinnedMeshRenderer);
+            }
+            foreach (MUActorMeshExportInfo meshExp in meshExportInfo)
+            {
+                if (gameObj.m_Name.Equals(meshExp.mRootBoneName))
+                {
+                    P5X_ConvertMeshRenderer(meshExp, gameObj);
+                }
+            }
+            foreach (var pptr in transform.m_Children)
+            {
+                if (pptr.TryGet(out var child))
+                    P5X_ConvertMeshRenderer(meshExportInfo, child);
+            }
+        }
+
+        private void P5X_ConvertMeshRenderer(MUActorMeshExportInfo meshExportInfo, GameObject gameObj)
+        {
+            Logger.Info($"Make mesh from root bone {meshExportInfo.mRootBoneName}");
+            // init mesh
+            var mesh = meshExportInfo.mMesh;
+            if (mesh == null) return;
+            var iMesh = new ImportedMesh();
+            iMesh.Path = GetTransformPath(gameObj.m_Transform);
+            iMesh.SubmeshList = new List<ImportedSubmesh>();
+
+            // check mesh has extra vertex data
+            iMesh.hasNormal = mesh.m_Normals?.Length > 0;
+            iMesh.hasUV = new bool[8];
+            for (int uv = 0; uv < 8; uv++)
+            {
+                iMesh.hasUV[uv] = mesh.GetUV(uv)?.Length > 0;
+            }
+            iMesh.hasTangent = mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4;
+            iMesh.hasColor = mesh.m_Colors?.Length > 0;
+
+            // Make faces
+            var firstSubmesh = mesh.m_SubMeshes[0];
+            int faceCount = (int)firstSubmesh.indexCount / 3;
+            var iSubmesh = new ImportedSubmesh();
+            ImportedMaterial iMat = ConvertMaterial(meshExportInfo.mMaterials[0]);
+            iSubmesh.Material = iMat.Name;
+            iSubmesh.BaseVertex = (int)firstSubmesh.firstVertex;
+
+            iSubmesh.FaceList = new List<ImportedFace>(faceCount);
+            for (int f = 0; f < faceCount; f++)
+            {
+                var face = new ImportedFace();
+                face.VertexIndices = new int[3];
+                face.VertexIndices[0] = (int)(mesh.m_Indices[f * 3 + 2]);// - submesh.firstVertex);
+                face.VertexIndices[1] = (int)(mesh.m_Indices[f * 3 + 1]);// - submesh.firstVertex);
+                face.VertexIndices[2] = (int)(mesh.m_Indices[f * 3]);// - submesh.firstVertex);
+                iSubmesh.FaceList.Add(face);
+            }
+            iMesh.SubmeshList.Add(iSubmesh);
+
+            // Shared vertex list
+            iMesh.VertexList = new List<ImportedVertex>((int)mesh.m_VertexCount);
+            for (var j = 0; j < mesh.m_VertexCount; j++)
+            {
+                var iVertex = new ImportedVertex();
+                //Vertices
+                int c = 3;
+                if (mesh.m_Vertices.Length == mesh.m_VertexCount * 4)
+                {
+                    c = 4;
+                }
+                iVertex.Vertex = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
+                //Normals
+                if (iMesh.hasNormal)
+                {
+                    if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
+                    {
+                        c = 3;
+                    }
+                    else if (mesh.m_Normals.Length == mesh.m_VertexCount * 4)
+                    {
+                        c = 4;
+                    }
+                    iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
+                }
+                //UV
+                iVertex.UV = new float[8][];
+                for (int uv = 0; uv < 8; uv++)
+                {
+                    if (iMesh.hasUV[uv])
+                    {
+                        var m_UV = mesh.GetUV(uv);
+                        if (m_UV.Length == mesh.m_VertexCount * 2)
+                        {
+                            c = 2;
+                        }
+                        else if (m_UV.Length == mesh.m_VertexCount * 3)
+                        {
+                            c = 3;
+                        }
+                        iVertex.UV[uv] = new[] { m_UV[j * c], m_UV[j * c + 1] };
+                    }
+                }
+                //Tangent
+                if (iMesh.hasTangent)
+                {
+                    iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
+                }
+                //Colors
+                if (iMesh.hasColor)
+                {
+                    if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
+                    {
+                        iVertex.Color = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
+                    }
+                    else
+                    {
+                        iVertex.Color = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
+                    }
+                }
+                //BoneInfluence
+                if (mesh.m_Skin?.Length > 0)
+                {
+                    var inf = mesh.m_Skin[j];
+                    iVertex.BoneIndices = new int[4];
+                    iVertex.Weights = new float[4];
+                    for (var k = 0; k < 4; k++)
+                    {
+                        iVertex.BoneIndices[k] = inf.boneIndex[k];
+                        iVertex.Weights[k] = inf.weight[k];
+                    }
+                }
+                iMesh.VertexList.Add(iVertex);
+            }
+            // Setup bones
+
+            //Bone
+            // Support m_BoneNameHashes only
+            //var hashBoneCount = mesh.m_BoneNameHashes.Count(x => FixBonePath(GetPathFromHash(x)) != null);
+            var boneCount = mesh.m_BindPose.Length;
+            iMesh.BoneList = new List<ImportedBone>(boneCount);
+            for (int i = 0; i < boneCount; i++)
+            {
+                var bone = new ImportedBone();
+                var boneHash = mesh.m_BoneNameHashes[i];
+                var path = GetPathFromHash(boneHash);
+                bone.Path = FixBonePath(path);
+                var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
+                bone.Matrix = convert * mesh.m_BindPose[i] * convert;
+                iMesh.BoneList.Add(bone);
+            }
+            // Morphs
+            if (mesh.m_Shapes?.channels?.Length > 0)
+            {
+                Logger.Info($"Morphs TODO");
+            }
+            // no combining meshes atm
+            MeshList.Add(iMesh);
+        }
         private void InitWithAnimator(Animator m_Animator)
         {
             if (m_Animator.m_Avatar.TryGet(out var m_Avatar))

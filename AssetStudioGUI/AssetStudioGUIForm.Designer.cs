@@ -55,6 +55,8 @@ namespace AssetStudioGUI
             toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             toolStripMenuItem14 = new System.Windows.Forms.ToolStripMenuItem();
             specifyUnityVersion = new System.Windows.Forms.ToolStripTextBox();
+            specifyUnityCNKey = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             toolStripMenuItem18 = new System.Windows.Forms.ToolStripMenuItem();
             specifyGame = new System.Windows.Forms.ToolStripComboBox();
             toolStripMenuItem19 = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,6 +72,8 @@ namespace AssetStudioGUI
             toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             exportSelectedNodessplitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
+            p5xExportMUActorMeshExportInfo = new System.Windows.Forms.ToolStripMenuItem();
             exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportAllAssetsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportSelectedAssetsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -167,8 +171,7 @@ namespace AssetStudioGUI
             exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             goToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            specifyUnityCNKey = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            p5xExportMUActorMeshExportInfoAnim = new System.Windows.Forms.ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -360,6 +363,18 @@ namespace AssetStudioGUI
             specifyUnityVersion.Name = "specifyUnityVersion";
             specifyUnityVersion.Size = new System.Drawing.Size(100, 23);
             // 
+            // specifyUnityCNKey
+            // 
+            specifyUnityCNKey.Name = "specifyUnityCNKey";
+            specifyUnityCNKey.Size = new System.Drawing.Size(225, 22);
+            specifyUnityCNKey.Text = "Specify UnityCN Key";
+            specifyUnityCNKey.Click += specifyUnityCNKey_Click;
+            // 
+            // toolStripSeparator13
+            // 
+            toolStripSeparator13.Name = "toolStripSeparator13";
+            toolStripSeparator13.Size = new System.Drawing.Size(222, 6);
+            // 
             // toolStripMenuItem18
             // 
             toolStripMenuItem18.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { specifyGame });
@@ -397,7 +412,7 @@ namespace AssetStudioGUI
             // 
             // modelToolStripMenuItem
             // 
-            modelToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportAllObjectssplitToolStripMenuItem1, exportSelectedObjectsToolStripMenuItem, exportSelectedObjectsWithAnimationClipToolStripMenuItem, toolStripSeparator1, exportSelectedObjectsmergeToolStripMenuItem, exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem, toolStripSeparator9, exportSelectedNodessplitToolStripMenuItem, exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem });
+            modelToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportAllObjectssplitToolStripMenuItem1, exportSelectedObjectsToolStripMenuItem, exportSelectedObjectsWithAnimationClipToolStripMenuItem, toolStripSeparator1, exportSelectedObjectsmergeToolStripMenuItem, exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem, toolStripSeparator9, exportSelectedNodessplitToolStripMenuItem, exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem, toolStripSeparator14, p5xExportMUActorMeshExportInfo, p5xExportMUActorMeshExportInfoAnim });
             modelToolStripMenuItem.Name = "modelToolStripMenuItem";
             modelToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
             modelToolStripMenuItem.Text = "Model";
@@ -405,61 +420,73 @@ namespace AssetStudioGUI
             // exportAllObjectssplitToolStripMenuItem1
             // 
             exportAllObjectssplitToolStripMenuItem1.Name = "exportAllObjectssplitToolStripMenuItem1";
-            exportAllObjectssplitToolStripMenuItem1.Size = new System.Drawing.Size(382, 22);
+            exportAllObjectssplitToolStripMenuItem1.Size = new System.Drawing.Size(511, 22);
             exportAllObjectssplitToolStripMenuItem1.Text = "Export all objects (split)";
             exportAllObjectssplitToolStripMenuItem1.Click += exportAllObjectssplitToolStripMenuItem1_Click;
             // 
             // exportSelectedObjectsToolStripMenuItem
             // 
             exportSelectedObjectsToolStripMenuItem.Name = "exportSelectedObjectsToolStripMenuItem";
-            exportSelectedObjectsToolStripMenuItem.Size = new System.Drawing.Size(382, 22);
+            exportSelectedObjectsToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
             exportSelectedObjectsToolStripMenuItem.Text = "Export selected objects (split)";
             exportSelectedObjectsToolStripMenuItem.Click += exportSelectedObjectsToolStripMenuItem_Click;
             // 
             // exportSelectedObjectsWithAnimationClipToolStripMenuItem
             // 
             exportSelectedObjectsWithAnimationClipToolStripMenuItem.Name = "exportSelectedObjectsWithAnimationClipToolStripMenuItem";
-            exportSelectedObjectsWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(382, 22);
+            exportSelectedObjectsWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
             exportSelectedObjectsWithAnimationClipToolStripMenuItem.Text = "Export selected objects (split) + selected AnimationClips";
             exportSelectedObjectsWithAnimationClipToolStripMenuItem.Click += exportObjectswithAnimationClipMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(379, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(508, 6);
             // 
             // exportSelectedObjectsmergeToolStripMenuItem
             // 
             exportSelectedObjectsmergeToolStripMenuItem.Name = "exportSelectedObjectsmergeToolStripMenuItem";
-            exportSelectedObjectsmergeToolStripMenuItem.Size = new System.Drawing.Size(382, 22);
+            exportSelectedObjectsmergeToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
             exportSelectedObjectsmergeToolStripMenuItem.Text = "Export selected objects (merge)";
             exportSelectedObjectsmergeToolStripMenuItem.Click += exportSelectedObjectsmergeToolStripMenuItem_Click;
             // 
             // exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem
             // 
             exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Name = "exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem";
-            exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(382, 22);
+            exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
             exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Text = "Export selected objects (merge) + selected AnimationClips";
             exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Click += exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem_Click;
             // 
             // toolStripSeparator9
             // 
             toolStripSeparator9.Name = "toolStripSeparator9";
-            toolStripSeparator9.Size = new System.Drawing.Size(379, 6);
+            toolStripSeparator9.Size = new System.Drawing.Size(508, 6);
             // 
             // exportSelectedNodessplitToolStripMenuItem
             // 
             exportSelectedNodessplitToolStripMenuItem.Name = "exportSelectedNodessplitToolStripMenuItem";
-            exportSelectedNodessplitToolStripMenuItem.Size = new System.Drawing.Size(382, 22);
+            exportSelectedNodessplitToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
             exportSelectedNodessplitToolStripMenuItem.Text = "Export selected nodes (split)";
             exportSelectedNodessplitToolStripMenuItem.Click += exportSelectedNodessplitToolStripMenuItem_Click;
             // 
             // exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem
             // 
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Name = "exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem";
-            exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Size = new System.Drawing.Size(382, 22);
+            exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Text = "Export selected nodes (split) + selected AnimationClips";
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Click += exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator14
+            // 
+            toolStripSeparator14.Name = "toolStripSeparator14";
+            toolStripSeparator14.Size = new System.Drawing.Size(508, 6);
+            // 
+            // p5xExportMUActorMeshExportInfo
+            // 
+            p5xExportMUActorMeshExportInfo.Name = "p5xExportMUActorMeshExportInfo";
+            p5xExportMUActorMeshExportInfo.Size = new System.Drawing.Size(511, 22);
+            p5xExportMUActorMeshExportInfo.Text = "(P5X Only) Export MUActorMeshExportInfo + Transform";
+            p5xExportMUActorMeshExportInfo.Click += p5xExportMUActorMeshExportInfo_Click;
             // 
             // exportToolStripMenuItem
             // 
@@ -1308,17 +1335,12 @@ namespace AssetStudioGUI
             showOriginalFileToolStripMenuItem.Visible = false;
             showOriginalFileToolStripMenuItem.Click += showOriginalFileToolStripMenuItem_Click;
             // 
-            // specifyUnityCNKey
+            // p5xExportMUActorMeshExportInfoAnim
             // 
-            specifyUnityCNKey.Name = "specifyUnityCNKey";
-            specifyUnityCNKey.Size = new System.Drawing.Size(225, 22);
-            specifyUnityCNKey.Text = "Specify UnityCN Key";
-            specifyUnityCNKey.Click += specifyUnityCNKey_Click;
-            // 
-            // toolStripSeparator13
-            // 
-            toolStripSeparator13.Name = "toolStripSeparator13";
-            toolStripSeparator13.Size = new System.Drawing.Size(222, 6);
+            p5xExportMUActorMeshExportInfoAnim.Name = "p5xExportMUActorMeshExportInfoAnim";
+            p5xExportMUActorMeshExportInfoAnim.Size = new System.Drawing.Size(511, 22);
+            p5xExportMUActorMeshExportInfoAnim.Text = "(P5X Only) Export MUActorMeshExportInfo + Transform + selected AnimationClips";
+            p5xExportMUActorMeshExportInfoAnim.Click += p5xExportMUActorMeshExportInfoAnim_Click;
             // 
             // AssetStudioGUIForm
             // 
@@ -1506,6 +1528,9 @@ namespace AssetStudioGUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
         private System.Windows.Forms.ToolStripMenuItem specifyUnityCNKey;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
+        private System.Windows.Forms.ToolStripMenuItem p5xExportMUActorMeshExportInfo;
+        private System.Windows.Forms.ToolStripMenuItem p5xExportMUActorMeshExportInfoAnim;
     }
 }
 
