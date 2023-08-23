@@ -808,6 +808,19 @@ namespace AssetStudioGUI
                 }
             });
         }
+        public static void Studio_ExportMUActorMeshExportInfo(List<MUActorMeshExportInfo> meshExpInfo, GameObject gameObj, string exportPath, List<AssetItem> animationList = null)
+        {
+            try
+            {
+                P5X_ExportGameObject(meshExpInfo, gameObj, exportPath, animationList);
+                StatusStripUpdate($"Finished exporting {gameObj.m_Name}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export GameObject:{gameObj.m_Name} error\r\n{ex.Message}\r\n{ex.StackTrace}");
+                StatusStripUpdate("Error in export");
+            }
+        }
 
         public static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
         {

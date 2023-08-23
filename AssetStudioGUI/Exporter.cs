@@ -360,6 +360,20 @@ namespace AssetStudioGUI
                 : new ModelConverter(rootName, gameObject, Properties.Settings.Default.convertType, Studio.Game, Properties.Settings.Default.collectAnimations);
             ExportFbx(convert, exportPath);
         }
+        public static bool P5X_ExportGameObject(List<MUActorMeshExportInfo> meshExpInfo, GameObject gameObj, string exportPath, List<AssetItem> animationList = null)
+        {
+            var model = animationList != null
+                ? new ModelConverter(meshExpInfo, gameObj, Properties.Settings.Default.convertType, Studio.Game, Properties.Settings.Default.collectAnimations, animationList.Select(x => (AnimationClip)x.Asset).ToArray())
+                : new ModelConverter(meshExpInfo, gameObj, Properties.Settings.Default.convertType, Studio.Game, Properties.Settings.Default.collectAnimations);
+            if (model.MeshList.Count == 0)
+            {
+                Logger.Info($"GameObject {gameObj} has no mesh, skipping...");
+                return false;
+            }
+            exportPath += FixFileName(gameObj.m_Name) + ".fbx";
+            ExportFbx(model, exportPath);
+            return true;
+        }
 
         private static void ExportFbx(IImported convert, string exportPath)
         {

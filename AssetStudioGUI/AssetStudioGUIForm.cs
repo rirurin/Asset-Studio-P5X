@@ -23,6 +23,8 @@ using Matrix4 = OpenTK.Mathematics.Matrix4;
 using OpenTK.Graphics;
 using OpenTK.Mathematics;
 using Newtonsoft.Json.Converters;
+using System.Collections.Specialized;
+using System.Collections;
 
 namespace AssetStudioGUI
 {
@@ -158,6 +160,8 @@ namespace AssetStudioGUI
 
             MapNameComboBox.SelectedIndexChanged += new EventHandler(specifyNameComboBox_SelectedIndexChanged);
             UnityCNManager.SetKey(Properties.Settings.Default.selectedUnityCNKey);
+
+            checkP5XModelExportOption();
         }
         private void AssetStudioGUIForm_DragEnter(object sender, DragEventArgs e)
         {
@@ -1510,6 +1514,16 @@ namespace AssetStudioGUI
             ExportObjects(true);
         }
 
+        private void p5xExportMUActorMeshExportInfo_Click(object sender, EventArgs e)
+        {
+            ExportMUActorMeshExportInfo(false);
+        }
+
+        private void p5xExportMUActorMeshExportInfoAnim_Click(object sender, EventArgs e)
+        {
+            ExportMUActorMeshExportInfo(true);
+        }
+
         private void ExportObjects(bool animation)
         {
             if (sceneTreeView.Nodes.Count > 0)
@@ -1536,6 +1550,110 @@ namespace AssetStudioGUI
             {
                 StatusStripUpdate("No Objects available for export");
             }
+        }
+
+        private void ExportMUActorMeshExportInfo(bool animation)
+        {
+            
+            TreeNodeCollection sceneNodes = sceneTreeView.Nodes;
+            if (sceneNodes.Count == 0)
+            {
+                StatusStripUpdate("No objects available for export");
+                return;
+            }
+            // Get skeleton in scene hierachy (using selected Animator instead because that's easier to find in asset list than a bunch of CABs in node tree)
+            /*var gameObjs = new List<GameObject>();
+            GetSelectedParentNode(sceneNodes, gameObjs);
+            if (gameObjs.Count == 0)
+            {
+                StatusStripUpdate("No Game Objects selected");
+                return;
+            }
+            if (gameObjs.Count > 1)
+            {
+                StatusStripUpdate("Can only select one transform at a time (for now)");
+                return;
+            }
+            GameObject gameObj = gameObjs.First();
+            */
+            List<AssetItem> animatorAssets = GetSelectedAssets().Where(x => x.Type == ClassIDType.Animator).ToList();
+            if (animatorAssets.Count == 0)
+            {
+                StatusStripUpdate("No Animator selected");
+                return;
+            }
+            else if (animatorAssets.Count > 1)
+            {
+                StatusStripUpdate("Only one animator can be selected");
+                return;
+            }
+            Animator animator = (Animator)animatorAssets[0].Asset;
+            if (!animator.m_GameObject.TryGet(out GameObject gameObj))
+            {
+                StatusStripUpdate($"Could not find GameObject that parents Animator with ID {animator.m_GameObject.m_PathID}");
+                return;
+            }
+            // Open File Explorer
+            var saveFolderDialog = new OpenFolderDialog();
+            saveFolderDialog.InitialFolder = saveDirectoryBackup;
+            if (saveFolderDialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            //saveDirectoryBackup = saveFolderDialog.Folder;
+            var exportPath = Path.Combine(saveFolderDialog.Folder, "MUActorMeshExportInfo") + Path.DirectorySeparatorChar;
+            
+            // Some meshes in P5X such as characters don't have a SkinnedMeshRenderer in any bundle, and instead generate it at runtime
+            // using data from a custom MonoBehavior called MUActorMeshExportInfo. Since I don't think you can "make" components,
+            // we're instead going to call our own constructor in ModelConverter.cs, but we first need to collect the parts to build that
+            // Get MUActorMeshExportInfo
+            List<AssetItem> meshExpInfoAssets = GetSelectedAssets().Where(x =>
+            {
+                if (x.Type != ClassIDType.MonoBehaviour) return false; // Check that Script referenced in MonoBehavior is correct name
+                var monoAsset = (MonoBehaviour)x.Asset;
+                if (!monoAsset.m_Script.TryGetName(out var scriptName) || !scriptName.Equals("MUActorMeshExportInfo")) return false;
+                return true;
+            }).ToList();
+            if (meshExpInfoAssets.Count == 0)
+            {
+                StatusStripUpdate("No MUActorMeshExportInfo selected");
+                return;
+            }
+            var meshExpInfoList = new List<MUActorMeshExportInfo>();
+            foreach (AssetItem meshExpInfoAsset in meshExpInfoAssets)
+            {
+                // Hopefully find a better way to get this - calling exportableAssets takes a few minutes *each* when all of P5X's assets are loaded
+                MUActorMeshExportInfo currExpInfo = new MUActorMeshExportInfo((MonoBehaviour)meshExpInfoAsset.Asset, true);
+                // Get Mesh
+                AssetItem meshAsset = exportableAssets.Find(x => x.Type == ClassIDType.Mesh && x.m_PathID == currExpInfo.mMeshID);
+                if (meshAsset == null)
+                {
+                    StatusStripUpdate($"Could not find mesh with path ID {currExpInfo.mMeshID}");
+                    return;
+                }
+                currExpInfo.mMesh = (Mesh)meshAsset.Asset;
+                // Get Materials
+                currExpInfo.mMaterials = new Material[currExpInfo.mMaterialIDs.Length];
+                for (int i = 0; i < currExpInfo.mMaterialIDs.Length; i++)
+                {
+                    AssetItem matAsset = exportableAssets.Find(x => x.Type == ClassIDType.Material && x.m_PathID == currExpInfo.mMaterialIDs[i]);
+                    if (matAsset == null)
+                    {
+                        //Logger.Info($"Could not find material with path ID {currExpInfo.mMaterialIDs[i]}");
+                        StatusStripUpdate($"Could not find material with path ID {currExpInfo.mMaterialIDs[i]} in {meshExpInfoAsset.m_PathID}");
+                        return;
+                    }
+                    currExpInfo.mMaterials[i] = (Material)matAsset.Asset;
+                }
+                meshExpInfoList.Add(currExpInfo);
+            }
+            List<AssetItem> animList = null;
+            if (animation)
+            {
+                animList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                if (animList.Count == 0) animList = null;
+            }
+            Studio_ExportMUActorMeshExportInfo(meshExpInfoList, gameObj, exportPath, animList);
         }
 
         private void exportSelectedObjectsmergeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2014,6 +2132,23 @@ namespace AssetStudioGUI
 
             assetsManager.SpecifyUnityVersion = specifyUnityVersion.Text;
             assetsManager.Game = Studio.Game;
+
+            checkP5XModelExportOption();
+
+        }
+
+        private void checkP5XModelExportOption()
+        {
+            if (Studio.Game.Type.IsP5X())
+            {
+                p5xExportMUActorMeshExportInfo.Enabled = true;
+                p5xExportMUActorMeshExportInfoAnim.Enabled = true;
+            }
+            else
+            {
+                p5xExportMUActorMeshExportInfo.Enabled = false;
+                p5xExportMUActorMeshExportInfoAnim.Enabled = false;
+            }
         }
 
         private async void specifyNameComboBox_SelectedIndexChanged(object sender, EventArgs e)

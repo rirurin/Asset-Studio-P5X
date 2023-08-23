@@ -331,7 +331,7 @@ namespace AssetStudioCLI
             return true;
         }
 
-        public static bool ExportGameObject(AssetItem item, string exportPath, List <AssetItem> animationList = null)
+        public static bool ExportGameObject(AssetItem item, string exportPath, List<AssetItem> animationList = null)
         {
             var m_GameObject = (GameObject)item.Asset;
             exportPath = Path.Combine(exportPath, m_GameObject.m_Name) + Path.DirectorySeparatorChar;
@@ -343,7 +343,7 @@ namespace AssetStudioCLI
             var convert = animationList != null
                 ? new ModelConverter(gameObject, Properties.Settings.Default.convertType, Studio.Game, Properties.Settings.Default.collectAnimations, animationList.Select(x => (AnimationClip)x.Asset).ToArray())
                 : new ModelConverter(gameObject, Properties.Settings.Default.convertType, Studio.Game, Properties.Settings.Default.collectAnimations);
-            
+
             if (convert.MeshList.Count == 0)
             {
                 Logger.Info($"GameObject {gameObject.m_Name} has no mesh, skipping...");

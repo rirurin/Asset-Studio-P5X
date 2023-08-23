@@ -35,6 +35,7 @@ namespace AssetStudio
             Games.Add(index++, new Game(GameType.NetEase));
             Games.Add(index++, new Game(GameType.AnchorPanic));
             Games.Add(index++, new Game(GameType.DreamscapeAlbireo));
+            Games.Add(index++, new Game(GameType.Persona5X));
         }
         public static Game GetGame(GameType gameType) => GetGame((int)gameType);
         public static Game GetGame(int index)
@@ -140,7 +141,8 @@ namespace AssetStudio
         HelixWaltz2,
         NetEase,
         AnchorPanic,
-        DreamscapeAlbireo
+        DreamscapeAlbireo,
+        Persona5X
     }
 
     public static class GameTypes
@@ -162,6 +164,7 @@ namespace AssetStudio
         public static bool IsNaraka(this GameType type) => type == GameType.Naraka;
         public static bool IsOPFP(this GameType type) => type == GameType.OPFP;
         public static bool IsNetEase(this GameType type) => type == GameType.NetEase;
+        public static bool IsP5X(this GameType type) => type == GameType.Persona5X;
         public static bool IsGIGroup(this GameType type) => type switch
         {
             GameType.GI or GameType.GI_Pack or GameType.GI_CB1 or GameType.GI_CB2 or GameType.GI_CB3 or GameType.GI_CB3Pre => true,
