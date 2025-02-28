@@ -25,6 +25,8 @@ using OpenTK.Mathematics;
 using Newtonsoft.Json.Converters;
 using System.Collections.Specialized;
 using System.Collections;
+using System.Xml;
+using AssetStudio.P5X;
 
 namespace AssetStudioGUI
 {
@@ -33,6 +35,7 @@ namespace AssetStudioGUI
         private AssetItem lastSelectedItem;
         private AssetBrowser assetBrowser;
         private DirectBitmap imageTexture;
+        private P5XFieldSelector FieldSelector;
         private string tempClipboard;
 
         private FMOD.System system;
@@ -815,7 +818,7 @@ namespace AssetStudioGUI
                         {
                             var settings = new JsonSerializerSettings();
                             settings.Converters.Add(new StringEnumConverter());
-                            str = JsonConvert.SerializeObject(assetItem.Asset, Formatting.Indented, settings);
+                            str = JsonConvert.SerializeObject(assetItem.Asset, Newtonsoft.Json.Formatting.Indented, settings);
                         }
                         if (str != null)
                         {
@@ -1042,7 +1045,7 @@ namespace AssetStudioGUI
                 var type = MonoBehaviourToTypeTree(m_MonoBehaviour);
                 obj = m_MonoBehaviour.ToType(type);
             }
-            var str = JsonConvert.SerializeObject(obj, Formatting.Indented);
+            var str = JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented);
             PreviewText(str);
         }
 
@@ -1523,6 +1526,14 @@ namespace AssetStudioGUI
         {
             ExportMUActorMeshExportInfo(true);
         }
+        private void p5xFieldTest_Click(object sender, EventArgs e)
+        {
+            P5X_FieldTest();
+        }
+        private void P5X_FieldExport_Click(object sender, EventArgs e)
+        {
+            P5X_FieldExport();
+        }
 
         private void ExportObjects(bool animation)
         {
@@ -1554,7 +1565,7 @@ namespace AssetStudioGUI
 
         private void ExportMUActorMeshExportInfo(bool animation)
         {
-            
+
             TreeNodeCollection sceneNodes = sceneTreeView.Nodes;
             if (sceneNodes.Count == 0)
             {
@@ -1602,7 +1613,7 @@ namespace AssetStudioGUI
             }
             //saveDirectoryBackup = saveFolderDialog.Folder;
             var exportPath = Path.Combine(saveFolderDialog.Folder, "MUActorMeshExportInfo") + Path.DirectorySeparatorChar;
-            
+
             // Some meshes in P5X such as characters don't have a SkinnedMeshRenderer in any bundle, and instead generate it at runtime
             // using data from a custom MonoBehavior called MUActorMeshExportInfo. Since I don't think you can "make" components,
             // we're instead going to call our own constructor in ModelConverter.cs, but we first need to collect the parts to build that
@@ -1656,6 +1667,171 @@ namespace AssetStudioGUI
             Studio_ExportMUActorMeshExportInfo(meshExpInfoList, gameObj, exportPath, animList);
         }
 
+        private List<Renderer> TerrainCheckTransforms(Transform trans)
+        {
+            List<Renderer> renderersLocal = new List<Renderer>();
+            if (trans.m_GameObject.TryGet(out var gameObj))
+            {
+                foreach (var objComp in gameObj.m_Components)
+                {
+                    if (objComp.TryGet(out var comp))
+                    {
+                        if (comp.type == ClassIDType.MeshRenderer || comp.type == ClassIDType.SkinnedMeshRenderer)
+                        {
+                            //Logger.Info($"{gameObj.m_Name}");
+                            renderersLocal.Add((Renderer)comp);
+                        }
+                    }
+                }
+                foreach (var tChild in trans.m_Children)
+                {
+                    if (tChild.TryGet(out var t))
+                    {
+                        renderersLocal.AddRange(TerrainCheckTransforms(t));
+                    }
+                }
+            }
+            return renderersLocal;
+        }
+
+        private void P5X_FieldTest()
+        {
+            AssetItem multiSceneObjAsset = GetSelectedAssets().Where(x =>
+            {
+                if (x.Type != ClassIDType.MonoBehaviour) return false; // Check that Script referenced in MonoBehavior is correct name
+                var monoAsset = (MonoBehaviour)x.Asset;
+                if (!monoAsset.m_Script.TryGetName(out var scriptName) || !scriptName.Equals("MUMultiSceneObjects")) return false;
+                return true;
+            }).First();
+
+            if (multiSceneObjAsset == null)
+            {
+                StatusStripUpdate("Not a MUMultiSceneObject");
+                return;
+            }
+            MonoBehaviour multiSceneObjMono = (MonoBehaviour)multiSceneObjAsset.Asset;
+            if (!multiSceneObjMono.m_GameObject.TryGet(out GameObject fieldRoot))
+            {
+                StatusStripUpdate($"Could not find the field root from MUMultiSceneObjects instance {multiSceneObjMono.m_GameObject.m_PathID}");
+                return;
+            }
+            MUMultiSceneObjects multiSceneObj = new MUMultiSceneObjects(multiSceneObjMono);
+            // Get terrain GameObject
+            AssetItem terrainAsset = exportableAssets.Find(x => x.Type == ClassIDType.GameObject && x.m_PathID == multiSceneObj.mTerrainObjID);
+            if (terrainAsset == null)
+            {
+                StatusStripUpdate($"Could not find terrain GameObject with ID {multiSceneObj.mTerrainObjID}");
+                return;
+            }
+            // Get list of renderers inside terrain node tree
+            multiSceneObj.mTerrainObj = (GameObject)terrainAsset.Asset;
+            List<Renderer> nodeTreeRenderList = new List<Renderer>();
+            if (multiSceneObj.mTerrainObj.m_Components[0].TryGet(out var terrainTransC) && terrainTransC.type == ClassIDType.Transform)
+            {
+                Transform terrainTrans = (Transform)terrainTransC;
+                foreach (var tChildPtr in terrainTrans.m_Children)
+                {
+                    if (tChildPtr.TryGet(out var tChild))
+                    {
+                        nodeTreeRenderList.AddRange(TerrainCheckTransforms(tChild));
+                    }
+                }
+            }
+            Logger.Info($"Found {nodeTreeRenderList.Count} renderers in terrain node tree");
+            Logger.Info($"{multiSceneObj.RenderIDs.Count} in MUMultiSceneObjects");
+            int renderFoundCount = 0;
+            // Verify that all renderers in terrain node tree exist in the MUMultiSceneObjects Renderer register
+            foreach (var renderID in multiSceneObj.RenderIDs)
+            {
+                Renderer renderFound = nodeTreeRenderList.Find(x => x.m_PathID == renderID);
+                if (renderFound != null) renderFoundCount++;
+            }
+            if ((renderFoundCount ^ multiSceneObj.RenderIDs.Count) != 0)
+            {
+                StatusStripUpdate($"Failed to verify the existence of all renderers ({renderFoundCount}/{multiSceneObj.RenderIDs.Count} verified)");
+                return;
+            }
+            /*
+            foreach (long fieldCamID in multiSceneObj.CameraIDs)
+            {
+                AssetItem fieldCamAsset = exportableAssets.Find(x => x.Type == ClassIDType.Camera && x.m_PathID == fieldCamID);
+                if (fieldCamAsset == null)
+                {
+                    Logger.Warning($"Could not find a camera asset with ID {fieldCamID} loaded");
+                } else
+                {
+                    multiSceneObj.Cameras.Add((Camera)fieldCamAsset.Asset);
+                }   
+            }
+            foreach (Camera fieldCam in multiSceneObj.Cameras)
+            {
+                if (fieldCam.m_GameObject.TryGetName(out string cameraName))
+                {
+                    Logger.Info($"{cameraName}");
+                }
+            }
+            */
+            /*
+            Logger.Info($"{multiSceneObj.RenderIDs.Count} renderers");
+            foreach (long renderID in multiSceneObj.RenderIDs)
+            {
+                AssetItem renderAsset = exportableAssets.Find(x =>
+                {
+                    if (x.Type != ClassIDType.MeshRenderer && x.Type != ClassIDType.SkinnedMeshRenderer)
+                    {
+                        return false;
+                    }
+                    if (x.m_PathID != renderID) return false;
+                    return true;
+                });
+                if (renderAsset == null)
+                {
+                    Logger.Warning($"Couldn't find asset with ID {renderID}");
+                    continue;
+                }
+                Renderer render = (Renderer)renderAsset.Asset;
+                render.m_GameObject.TryGetName(out string renderGameObjName);
+                if (renderGameObjName != null)
+                {
+                    Logger.Info($"{renderGameObjName}");
+                } else
+                {
+                    Logger.Warning($"Could not get name");
+                }
+            }
+            */
+        }
+        private void P5X_FieldExport()
+        {
+            var openFolderDialog = new OpenFolderDialog();
+            openFolderDialog.Title = "Select folder containing databases";
+            if (openFolderDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                FieldSelector = new P5XFieldSelector();
+                FieldSelector.LoadFields(openFolderDialog.Folder);
+                FieldSelector.Show();
+            }
+            else
+            {
+                StatusStripUpdate("No folder was selected");
+            }
+            /*
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Select Config Database Map file";
+            openFileDialog.InitialDirectory = openDirectoryBackup;
+            openFileDialog.Filter = "Unity Byte Data (*.bytes)|*.bytes";
+            if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                FieldSelector = new P5XFieldSelector();
+                Console.WriteLine(openFileDialog.InitialDirectory);
+                FieldSelector.LoadFields(openFileDialog.FileName);
+                FieldSelector.Show();
+            } else
+            {
+                StatusStripUpdate("Config Database Map file was not found");
+            }
+            */
+        }
         private void exportSelectedObjectsmergeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ExportMergeObjects(false);
@@ -2141,13 +2317,21 @@ namespace AssetStudioGUI
         {
             if (Studio.Game.Type.IsP5X())
             {
+                persona5XToolStripMenuItem.Enabled = true;
+                /*
                 p5xExportMUActorMeshExportInfo.Enabled = true;
                 p5xExportMUActorMeshExportInfoAnim.Enabled = true;
+                p5xFieldTest.Enabled = true;
+                */
             }
             else
             {
+                persona5XToolStripMenuItem.Enabled = false;
+                /*
                 p5xExportMUActorMeshExportInfo.Enabled = false;
                 p5xExportMUActorMeshExportInfoAnim.Enabled = false;
+                p5xFieldTest.Enabled = false;
+                */
             }
         }
 

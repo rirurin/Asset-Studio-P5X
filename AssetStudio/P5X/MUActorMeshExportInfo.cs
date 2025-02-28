@@ -10,7 +10,7 @@ namespace AssetStudio
 {
     // From PWRD.MUEngine.dll
     // Used for Persona 5 X
-    public sealed class MUActorMeshExportInfo
+    public sealed class MUActorMeshExportInfo : ICustomMonoBehavior
     {
         // LOD specific fields
         private string mHighRootBoneName;
@@ -26,7 +26,7 @@ namespace AssetStudio
         private long mHighMeshID;
         private long mLodMeshID;
         // Flags
-        public bool mIsSkinnedMeshRender { get; }
+        public bool mIsSkinnedMeshRender { get; private set; }
         public bool mIsLOD { get; }
         // Public facing fields
         public Mesh mMesh {
@@ -68,8 +68,7 @@ namespace AssetStudio
             }
             return arr;
         }
-        */
-        private T[] makeArray<T>(object objListA, Func<object, T> insertFunc)
+        public T[] makeArray<T>(object objListA, Func<object, T> insertFunc)
         {
             List<object> objList = (List<object>)objListA;
             T[] arr = new T[objList.Count];
@@ -93,10 +92,54 @@ namespace AssetStudio
             }
             return val;
         }
+        */
+        
         public MUActorMeshExportInfo(MonoBehaviour behavior, bool isLOD)
         {
-            OrderedDictionary bDict = behavior.ToType();
+            
             mIsLOD = isLOD;
+            ICustomMonoBehavior.FillFields(behavior, (fldKey, fldVal) =>
+            {
+                switch (fldKey)
+                {
+                    case "mHighRootBoneName":
+                        mHighRootBoneName = (string)fldVal;
+                        break;
+                    case "mLodRootBoneName":
+                        mLodRootBoneName = (string)fldVal;
+                        break;
+                    case "mHighMeshBoneNames":
+                        mHighMeshBoneNames = ICustomMonoBehavior.MakeArray(fldVal, x => x.ToString());
+                        break;
+                    case "mLodMeshBoneNames":
+                        mLodMeshBoneNames = ICustomMonoBehavior.MakeArray(fldVal, x => x.ToString());
+                        break;
+                    case "mHighMeshMaterials":
+                        mHighMeshMaterialIDs = ICustomMonoBehavior.MakeArray(fldVal, x => ICustomMonoBehavior.GetObjectPathID(x));
+                        break;
+                    case "mLodMaterials":
+                        mLodMaterialIDs = ICustomMonoBehavior.MakeArray(fldVal, x => ICustomMonoBehavior.GetObjectPathID(x));
+                        break;
+                    case "mMesh":
+                        mHighMeshID = ICustomMonoBehavior.GetObjectPathID(fldVal);
+                        break;
+                    case "mLODMesh":
+                        mLodMeshID = ICustomMonoBehavior.GetObjectPathID(fldVal);
+                        break;
+                    case "mIsSkinnedMeshRender":
+                        if ((byte)fldVal == 0)
+                        {
+                            mIsSkinnedMeshRender = false;
+                        }
+                        else
+                        {
+                            mIsSkinnedMeshRender = true;
+                        }
+                        break;
+                }
+            });
+            /*
+            OrderedDictionary bDict = behavior.ToType();
             foreach (DictionaryEntry dictEntry in bDict)
             {
                 switch ((string)dictEntry.Key)
@@ -108,16 +151,16 @@ namespace AssetStudio
                         mLodRootBoneName = (string)dictEntry.Value;
                         break;
                     case "mHighMeshBoneNames":
-                        mHighMeshBoneNames = makeArray(dictEntry.Value, x => x.ToString());
+                        mHighMeshBoneNames = ICustomMonoBehavior.MakeArray(dictEntry.Value, x => x.ToString());
                         break;
                     case "mLodMeshBoneNames":
-                        mLodMeshBoneNames = makeArray(dictEntry.Value, x => x.ToString());
+                        mLodMeshBoneNames = ICustomMonoBehavior.MakeArray(dictEntry.Value, x => x.ToString());
                         break;
                     case "mHighMeshMaterials":
-                        mHighMeshMaterialIDs = makeArray(dictEntry.Value, x => setObjectPathId((OrderedDictionary)x));
+                        mHighMeshMaterialIDs = ICustomMonoBehavior.MakeArray(dictEntry.Value, x => setObjectPathId((OrderedDictionary)x));
                         break;
                     case "mLodMaterials":
-                        mLodMaterialIDs = makeArray(dictEntry.Value, x => setObjectPathId((OrderedDictionary)x));
+                        mLodMaterialIDs = ICustomMonoBehavior.MakeArray(dictEntry.Value, x => setObjectPathId((OrderedDictionary)x));
                         break;
                     case "mMesh":
                         mHighMeshID = setObjectPathId((OrderedDictionary)dictEntry.Value);
@@ -136,6 +179,7 @@ namespace AssetStudio
                         break;
                 }
             }
+            */
         }
         /*
         public void BuildSkinnedMeshRender(Transform parent, SkinnedMeshRenderer render)

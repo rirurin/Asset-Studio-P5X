@@ -679,6 +679,7 @@ namespace AssetStudio
 
             foreach (var assetsFile in assetsFileList)
             {
+                Logger.Info($"{assetsFile.fullName}");
                 var gameObjects = assetsFile.ReadObjects(ClassIDType.GameObject).Cast<GameObject>();
                 foreach (var m_GameObject in gameObjects)
                 {

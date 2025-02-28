@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AssetStudio;
+using System;
 
 namespace AssetStudioGUI
 {
@@ -74,6 +75,8 @@ namespace AssetStudioGUI
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             p5xExportMUActorMeshExportInfo = new System.Windows.Forms.ToolStripMenuItem();
+            p5xExportMUActorMeshExportInfoAnim = new System.Windows.Forms.ToolStripMenuItem();
+            p5xFieldTest = new System.Windows.Forms.ToolStripMenuItem();
             exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportAllAssetsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportSelectedAssetsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -171,7 +174,8 @@ namespace AssetStudioGUI
             exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             goToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            p5xExportMUActorMeshExportInfoAnim = new System.Windows.Forms.ToolStripMenuItem();
+            persona5XToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            exportFieldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -195,7 +199,7 @@ namespace AssetStudioGUI
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, modelToolStripMenuItem, exportToolStripMenuItem, filterTypeToolStripMenuItem, debugMenuItem, miscToolStripMenuItem });
+            menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, modelToolStripMenuItem, exportToolStripMenuItem, filterTypeToolStripMenuItem, debugMenuItem, miscToolStripMenuItem, persona5XToolStripMenuItem });
             menuStrip1.Location = new System.Drawing.Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new System.Drawing.Size(1264, 24);
@@ -412,7 +416,7 @@ namespace AssetStudioGUI
             // 
             // modelToolStripMenuItem
             // 
-            modelToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportAllObjectssplitToolStripMenuItem1, exportSelectedObjectsToolStripMenuItem, exportSelectedObjectsWithAnimationClipToolStripMenuItem, toolStripSeparator1, exportSelectedObjectsmergeToolStripMenuItem, exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem, toolStripSeparator9, exportSelectedNodessplitToolStripMenuItem, exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem, toolStripSeparator14, p5xExportMUActorMeshExportInfo, p5xExportMUActorMeshExportInfoAnim });
+            modelToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportAllObjectssplitToolStripMenuItem1, exportSelectedObjectsToolStripMenuItem, exportSelectedObjectsWithAnimationClipToolStripMenuItem, toolStripSeparator1, exportSelectedObjectsmergeToolStripMenuItem, exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem, toolStripSeparator9, exportSelectedNodessplitToolStripMenuItem, exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem, toolStripSeparator14 });
             modelToolStripMenuItem.Name = "modelToolStripMenuItem";
             modelToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
             modelToolStripMenuItem.Text = "Model";
@@ -420,73 +424,87 @@ namespace AssetStudioGUI
             // exportAllObjectssplitToolStripMenuItem1
             // 
             exportAllObjectssplitToolStripMenuItem1.Name = "exportAllObjectssplitToolStripMenuItem1";
-            exportAllObjectssplitToolStripMenuItem1.Size = new System.Drawing.Size(511, 22);
+            exportAllObjectssplitToolStripMenuItem1.Size = new System.Drawing.Size(508, 22);
             exportAllObjectssplitToolStripMenuItem1.Text = "Export all objects (split)";
             exportAllObjectssplitToolStripMenuItem1.Click += exportAllObjectssplitToolStripMenuItem1_Click;
             // 
             // exportSelectedObjectsToolStripMenuItem
             // 
             exportSelectedObjectsToolStripMenuItem.Name = "exportSelectedObjectsToolStripMenuItem";
-            exportSelectedObjectsToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
+            exportSelectedObjectsToolStripMenuItem.Size = new System.Drawing.Size(508, 22);
             exportSelectedObjectsToolStripMenuItem.Text = "Export selected objects (split)";
             exportSelectedObjectsToolStripMenuItem.Click += exportSelectedObjectsToolStripMenuItem_Click;
             // 
             // exportSelectedObjectsWithAnimationClipToolStripMenuItem
             // 
             exportSelectedObjectsWithAnimationClipToolStripMenuItem.Name = "exportSelectedObjectsWithAnimationClipToolStripMenuItem";
-            exportSelectedObjectsWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
+            exportSelectedObjectsWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(508, 22);
             exportSelectedObjectsWithAnimationClipToolStripMenuItem.Text = "Export selected objects (split) + selected AnimationClips";
             exportSelectedObjectsWithAnimationClipToolStripMenuItem.Click += exportObjectswithAnimationClipMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(508, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(505, 6);
             // 
             // exportSelectedObjectsmergeToolStripMenuItem
             // 
             exportSelectedObjectsmergeToolStripMenuItem.Name = "exportSelectedObjectsmergeToolStripMenuItem";
-            exportSelectedObjectsmergeToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
+            exportSelectedObjectsmergeToolStripMenuItem.Size = new System.Drawing.Size(508, 22);
             exportSelectedObjectsmergeToolStripMenuItem.Text = "Export selected objects (merge)";
             exportSelectedObjectsmergeToolStripMenuItem.Click += exportSelectedObjectsmergeToolStripMenuItem_Click;
             // 
             // exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem
             // 
             exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Name = "exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem";
-            exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
+            exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(508, 22);
             exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Text = "Export selected objects (merge) + selected AnimationClips";
             exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem.Click += exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem_Click;
             // 
             // toolStripSeparator9
             // 
             toolStripSeparator9.Name = "toolStripSeparator9";
-            toolStripSeparator9.Size = new System.Drawing.Size(508, 6);
+            toolStripSeparator9.Size = new System.Drawing.Size(505, 6);
             // 
             // exportSelectedNodessplitToolStripMenuItem
             // 
             exportSelectedNodessplitToolStripMenuItem.Name = "exportSelectedNodessplitToolStripMenuItem";
-            exportSelectedNodessplitToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
+            exportSelectedNodessplitToolStripMenuItem.Size = new System.Drawing.Size(508, 22);
             exportSelectedNodessplitToolStripMenuItem.Text = "Export selected nodes (split)";
             exportSelectedNodessplitToolStripMenuItem.Click += exportSelectedNodessplitToolStripMenuItem_Click;
             // 
             // exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem
             // 
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Name = "exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem";
-            exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Size = new System.Drawing.Size(511, 22);
+            exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Size = new System.Drawing.Size(508, 22);
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Text = "Export selected nodes (split) + selected AnimationClips";
             exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem.Click += exportSelectedNodessplitSelectedAnimationClipsToolStripMenuItem_Click;
             // 
             // toolStripSeparator14
             // 
             toolStripSeparator14.Name = "toolStripSeparator14";
-            toolStripSeparator14.Size = new System.Drawing.Size(508, 6);
+            toolStripSeparator14.Size = new System.Drawing.Size(505, 6);
             // 
             // p5xExportMUActorMeshExportInfo
             // 
             p5xExportMUActorMeshExportInfo.Name = "p5xExportMUActorMeshExportInfo";
-            p5xExportMUActorMeshExportInfo.Size = new System.Drawing.Size(511, 22);
-            p5xExportMUActorMeshExportInfo.Text = "(P5X Only) Export MUActorMeshExportInfo + Transform";
+            p5xExportMUActorMeshExportInfo.Size = new System.Drawing.Size(508, 22);
+            p5xExportMUActorMeshExportInfo.Text = "Export MUActorMeshExportInfo + Animator";
             p5xExportMUActorMeshExportInfo.Click += p5xExportMUActorMeshExportInfo_Click;
+            // 
+            // p5xExportMUActorMeshExportInfoAnim
+            // 
+            p5xExportMUActorMeshExportInfoAnim.Name = "p5xExportMUActorMeshExportInfoAnim";
+            p5xExportMUActorMeshExportInfoAnim.Size = new System.Drawing.Size(508, 22);
+            p5xExportMUActorMeshExportInfoAnim.Text = "Export MUActorMeshExportInfo + Animator + selected AnimationClips";
+            p5xExportMUActorMeshExportInfoAnim.Click += p5xExportMUActorMeshExportInfoAnim_Click;
+            // 
+            // p5xFieldTest
+            // 
+            p5xFieldTest.Name = "p5xFieldTest";
+            p5xFieldTest.Size = new System.Drawing.Size(508, 22);
+            p5xFieldTest.Text = "Field Test";
+            p5xFieldTest.Click += p5xFieldTest_Click;
             // 
             // exportToolStripMenuItem
             // 
@@ -1335,12 +1353,19 @@ namespace AssetStudioGUI
             showOriginalFileToolStripMenuItem.Visible = false;
             showOriginalFileToolStripMenuItem.Click += showOriginalFileToolStripMenuItem_Click;
             // 
-            // p5xExportMUActorMeshExportInfoAnim
+            // persona5XToolStripMenuItem
             // 
-            p5xExportMUActorMeshExportInfoAnim.Name = "p5xExportMUActorMeshExportInfoAnim";
-            p5xExportMUActorMeshExportInfoAnim.Size = new System.Drawing.Size(511, 22);
-            p5xExportMUActorMeshExportInfoAnim.Text = "(P5X Only) Export MUActorMeshExportInfo + Transform + selected AnimationClips";
-            p5xExportMUActorMeshExportInfoAnim.Click += p5xExportMUActorMeshExportInfoAnim_Click;
+            persona5XToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportFieldToolStripMenuItem, p5xExportMUActorMeshExportInfo, p5xExportMUActorMeshExportInfoAnim, /*p5xFieldTest*/ });
+            persona5XToolStripMenuItem.Name = "persona5XToolStripMenuItem";
+            persona5XToolStripMenuItem.Size = new System.Drawing.Size(74, 20);
+            persona5XToolStripMenuItem.Text = "Persona5X";
+            // 
+            // exportFieldToolStripMenuItem
+            // 
+            exportFieldToolStripMenuItem.Name = "exportFieldToolStripMenuItem";
+            exportFieldToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            exportFieldToolStripMenuItem.Text = "Export Field";
+            exportFieldToolStripMenuItem.Click += P5X_FieldExport_Click;
             // 
             // AssetStudioGUIForm
             // 
@@ -1531,6 +1556,9 @@ namespace AssetStudioGUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
         private System.Windows.Forms.ToolStripMenuItem p5xExportMUActorMeshExportInfo;
         private System.Windows.Forms.ToolStripMenuItem p5xExportMUActorMeshExportInfoAnim;
+        private System.Windows.Forms.ToolStripMenuItem p5xFieldTest;
+        private System.Windows.Forms.ToolStripMenuItem persona5XToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportFieldToolStripMenuItem;
     }
 }
 
